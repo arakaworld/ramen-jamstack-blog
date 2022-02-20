@@ -1,4 +1,12 @@
+import axios from 'axios'
+
 export default {
+
+  privateRuntimeConfig: {
+    microCmsApiBaseUrl: process.env.MICRO_CMS_API_BASE_URL || '',
+    microCmsApiKey: process.env.MICRO_CMS_API_KEY || '',
+  },
+
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 
@@ -40,5 +48,22 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  generate: {
+    async routes() {
+      const pages = await axios
+        .get(`${process.env.MICRO_CMS_API_BASE_URL}/api/v1/blog?limit=100`,
+          {
+            headers: {'X-MICROCMS-API-KEY': process.env.MICRO_CMS_API_KEY }
+          })
+        .then((res) =>
+          res.data.contents.map((content) => ({
+            route: `/${content.id}`,
+            payload: content
+          }))
+        )
+      return pages
+    }
   }
 }
